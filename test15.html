@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="zh">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>家庭成员 GML 解析</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.css" />
+    <style>
+        #map {
+            height: 400px;
+        }
+    </style>
+</head>
+
+<body>
+    <h2>197221 阳佳琦</h2>
+    <ul id="family-info"></ul>
+    <div id="map"></div>
+
+    <script>
+        // 解析 GML 字符串
+        const gmlString = `<?xml version="1.0" encoding="UTF-8"?>
+        <gml:FeatureCollection xmlns:gml="http://www.opengis.net/gml">
+            <gml:featureMember>
+                <Person>
+                    <name>张三</name>
+                    <age>35</age>
+                    <gender>Male</gender>
+                    <hobbies>跑步, 旅行</hobbies>
+                    <birthPlace>北京</birthPlace>
+                    <location>
+                        <gml:Point>
+                            <gml:coordinates>116.4074,39.9042</gml:coordinates>
+                        </gml:Point>
+                    </location>
+                </Person>
+            </gml:featureMember>
+            <gml:featureMember>
+                <Person>
+                    <name>李四</name>
+                    <age>32</age>
+                    <gender>Female</gender>
+                    <hobbies>阅读, 摄影</hobbies>
+                    <birthPlace>上海</birthPlace>
+                    <location>
+                        <gml:Point>
+                            <gml:coordinates>121.4737,31.2304</gml:coordinates>
+                        </gml:Point>
+                    </location>
+                </Person>
+            </gml:featureMember>
+                        <gml:featureMember>
+                <Person>
+                    <name>菲菲</name>
+                    <age>3</age>
+                    <gender>Female</gender>
+                    <hobbies>跳舞</hobbies>
+                    <birthPlace>芜湖</birthPlace>
+                    <location>
+                        <gml:Point>
+                            <gml:coordinates>118.3737,31.1304</gml:coordinates>
+                        </gml:Point>
+                    </location>
+                </Person>
+            </gml:featureMember>
+        </gml:FeatureCollection>`;
+
+        // 解析 XML
+        const parser = new DOMParser();
+        const xmlDoc = parser.parseFromString(gmlString, "application/xml");
+
+        const persons = xmlDoc.getElementsByTagName("Person");
+        const familyInfoList = document.getElementById("family-info");
+
+        // 初始化地图
+        const map = L.map('map').setView([35, 110], 5);
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '&copy; OpenStreetMap contributors'
+        }).addTo(map);
+
+        for (let person of persons) {
+            const name = person.getElementsByTagName("name")[0].textContent;
+            const age = person.getElementsByTagName("age")[0].textContent;
+            const gender = person.getElementsByTagName("gender")[0].textContent;
+            const hobbies = person.getElementsByTagName("hobbies")[0].textContent;
+            const birthPlace = person.getElementsByTagName("birthPlace")[0].textContent;
+            const coordinates = person.getElementsByTagName("gml:coordinates")[0].textContent.split(",");
+
+            // 添加到 HTML 列表
+            const listItem = document.createElement("li");
+            listItem.innerHTML = `<strong>${name}</strong>，${age}岁，性别：${gender}，爱好：${hobbies}，出生地：${birthPlace}`;
+            familyInfoList.appendChild(listItem);
+
+            // 添加标记到地图
+            L.marker([parseFloat(coordinates[1]), parseFloat(coordinates[0])])
+                .addTo(map)
+                .bindPopup(`<b>${name}</b><br>出生地: ${birthPlace}`);
+        }
+    </script>
+</body>
+
+</html>
